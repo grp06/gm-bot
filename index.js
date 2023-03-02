@@ -11,8 +11,7 @@ dotenv.config()
 const endpoint = 'https://decent-vervet-12.hasura.app/v1/graphql'
 
 const badgeUris = [
-  'bafyreidbup5ra5y3wb3ulls4stbghlihxhpwsxb63wl32tzvhkpk7i5pba',
-  'bafyreic6wh2xb6awucsmmssem5qkjhexlnziw3bv4tcgzxargsiorxsq34',
+  'bafyreide5pvibjovhoqbdx6trb2f7nqljsszdsnz2yltkl7fdphskhuxse',
 ]
 
 const getProfileUrl = (address) => {
@@ -92,7 +91,7 @@ client.on('messageCreate', async (message) => {
       const alreadyClaimed = checkIfAlreadyClaimed(streak, updated_at, message)
       if (alreadyClaimed) return
 
-      const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
+      // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
       // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
       message.reply(`Your current streak is ${streak}, I'm airdropping you a badge to celebrate!
 
@@ -101,7 +100,7 @@ I'll send you another message in about 15 seconds with a link!
 
       await mintGm({
         recipients: [address],
-        specUri: hardCodedStreak,
+        specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
         newStreak: streak + 1,
         message,
       })
