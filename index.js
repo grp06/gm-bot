@@ -23,11 +23,14 @@ const getProfileUrl = (address) => {
 
 // Replace these contract addresses with your own
 const {
-  BADGES_CONTRACT,
+  BADGES_GOERLI,
+  BADGE_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
   ALCHEMY_API_KEY,
   ADMIN_SECRET,
+  NODE_ENV,
 } = process.env
+console.log('🚀 ~ NODE_ENV:', NODE_ENV)
 
 const client = new Client({
   intents: [
@@ -52,7 +55,7 @@ const signer = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider)
 
 // Initialize the badges contract interface
 const badgesContract = new ethers.Contract(
-  BADGES_CONTRACT,
+  NODE_ENV === 'production' ? BADGE_OPTIMISM : BADGES_GOERLI,
   ['function airdrop(address[] recipients, string specUri) public'],
   signer,
 )
