@@ -99,6 +99,8 @@ client.on('messageCreate', async (message) => {
 I'll send you another message in about 15 seconds with a link!
             `)
       const specUri = `ipfs://${badgeUris[streak]}/metadata.json`
+
+      console.log('🚀 ~ client.on ~ specUri:', specUri)
       console.log(
         'realSpec - ',
         'ipfs://bafyreide5pvibjovhoqbdx6trb2f7nqljsszdsnz2yltkl7fdphskhuxse/metadata.json',
