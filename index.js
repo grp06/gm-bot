@@ -76,6 +76,22 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`)
 })
 
+client.on('guildMemberAdd', (member) => {
+  const channel = member.guild.channels.cache.find(
+    (ch) => ch.name === 'register',
+  ) // Replace 'welcome' with the name of your channel
+  if (!channel) return
+  channel.send(`Welcome to the server, ${member}!
+
+
+Step 1: type /register followed by your wallet address
+-- example: /register 0x1234567890abcdef1234567890abcdef12345678
+Step 2: go to #gm and say "gm"
+Step 3: receive today's gm badge
+Step 4: come back tomorrow and repeat
+`)
+})
+
 client.on('messageCreate', async (message) => {
   if (message.content.includes('gm')) {
     try {
@@ -93,9 +109,9 @@ client.on('messageCreate', async (message) => {
 
       // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
       // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
-      message.reply(`Your current streak is ${streak}, I'm airdropping you a badge to celebrate!
+      message.reply(`Today is day ${streak} of your streak, I'm creating a soulbound token to celebrate!
 
-I'll send you another message in about 15 seconds with a link!
+I'll send you another message in about 6 seconds with a link!
             `)
       const specUri = `ipfs://${badgeUris[streak]}/metadata.json`
 
