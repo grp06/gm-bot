@@ -211,7 +211,9 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
   console.log('🚀 ~ mintGm ~ recipients:', recipients)
   try {
     // Call the "airdrop" function on the badges contract
-    const tx = await badgesContract.airdrop(recipients, specUri)
+    const gasLimit = 1000000 // Specify the gas limit you want to use
+    const tx = await badgesContract.airdrop(recipients, specUri, { gasLimit })
+
     console.log('🚀 ~ tx submited, waiting...')
     // Wait for the transaction to be mined
     await tx.wait()
