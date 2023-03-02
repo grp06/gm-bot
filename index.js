@@ -25,7 +25,8 @@ const getProfileUrl = (address) => {
 // Replace these contract addresses with your own
 const {
   ADMIN_SECRET,
-  ALCHEMY_API_KEY,
+  ALCHEMY_GOERLI,
+  ALCHEMY_OPTIMISM,
   BADGES_GOERLI,
   BADGES_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
@@ -52,10 +53,7 @@ if (NODE_ENV === 'production') {
 // Initialize the ethers provider and signer
 // Set up the Alchemy provider
 const provider = ethers.getDefaultProvider(
-  'https://eth-goerli.g.alchemy.com/v2/2bJVK5JAlpGcV1JxYj6N56d-TJYa2Mrr',
-  {
-    alchemy: ALCHEMY_API_KEY,
-  },
+  NODE_ENV === 'production' ? ALCHEMY_OPTIMISM : ALCHEMY_GOERLI,
 )
 
 const signer = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider)
@@ -66,6 +64,7 @@ const badgesContract = new ethers.Contract(
   ['function airdrop(address[] recipients, string specUri) public'],
   signer,
 )
+console.log("🚀 ~ NODE_ENV === 'production':", NODE_ENV === 'production')
 
 // Initialize the express app
 const app = express()
