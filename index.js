@@ -93,10 +93,6 @@ Step 4: come back tomorrow and repeat
 })
 
 client.on('messageCreate', async (message) => {
-  if (message.channel.name === 'general' && message.content.includes('gm')) {
-    message.channel.send("gm's belong in the #gm channel")
-    return
-  }
   if (message.content.includes('gm')) {
     try {
       // pull the discord id from the message
