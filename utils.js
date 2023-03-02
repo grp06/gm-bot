@@ -37,7 +37,7 @@ const checkIfAlreadyClaimed = (streak, updated_at, message) => {
     } to continue your streak and claim your next badge.`
 
     message.reply(`You already got your badge for today!
-The current time is ${dateString} GMT (GMT is our favorite timezone).
+The current time is ${dateString} GMt.
 ${comeBackMessage}
     `)
 
