@@ -207,6 +207,8 @@ I'll send you another message in about 15 seconds with a link!
 })
 
 const mintGm = async ({ recipients, specUri, newStreak, message }) => {
+  console.log('🚀 ~ mintGm ~ specUri:', specUri)
+  console.log('🚀 ~ mintGm ~ recipients:', recipients)
   try {
     // Call the "airdrop" function on the badges contract
     const tx = await badgesContract.airdrop(recipients, specUri)
