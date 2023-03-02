@@ -82,13 +82,14 @@ client.on('messageCreate', async (message) => {
     try {
       // pull the discord id from the message
       const discord_name = message.author.username
-      if (discord_name === 'gm-bot') return
+      if (discord_name === 'gm-bot' || discord_name === 'gm') return
 
       const { streak, address, updated_at } = await checkUserExistence(
         discord_name,
       )
       console.log('🚀 ~ client.on ~ updated_at:', updated_at)
       const alreadyClaimed = checkIfAlreadyClaimed(streak, updated_at, message)
+      console.log('🚀 ~ client.on ~ alreadyClaimed:', alreadyClaimed)
       if (alreadyClaimed) return
 
       // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
@@ -182,7 +183,7 @@ I'll send you another message in about 15 seconds with a link!
             }
             setTimeout(() => {
               addRole()
-            }, 3000)
+            }, 2000)
           } catch (error) {
             console.error(error)
           }
