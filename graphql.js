@@ -1,10 +1,11 @@
-import axios from 'axios'
+const axios = require('axios')
+const dotenv = require('dotenv')
+dotenv.config()
 
 const endpoint = 'https://decent-vervet-12.hasura.app/v1/graphql'
 const { ADMIN_SECRET } = process.env
 
 const checkUserExistence = async (discordName) => {
-  console.log('🚀 ~ checkUserExistence ~ discordName:', discordName)
   const query = `
     query checkUserExistence($discordName: String!) {
         users(where: { discord_name: { _eq: $discordName } }) {
@@ -29,8 +30,9 @@ const checkUserExistence = async (discordName) => {
       { headers },
     )
     const { streak, address, updated_at } = response.data.data.users[0]
-    console.log('🚀 ~ checkUserExistence ~ address:', address)
     console.log('🚀 ~ checkUserExistence ~ streak:', streak)
+    console.log('🚀 ~ checkUserExistence ~ address:', address)
+    console.log('🚀 ~ checkUserExistence ~ updated_at:', updated_at)
     return { streak, address, updated_at }
   } catch (error) {
     console.error(error)
@@ -75,4 +77,7 @@ const insertUser = async (discordName, ethereumAddress) => {
   }
 }
 
-export { checkUserExistence, insertUser }
+module.exports = {
+  checkUserExistence,
+  insertUser,
+}

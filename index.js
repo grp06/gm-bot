@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const dotenv = require('dotenv')
 const { Client, GatewayIntentBits } = require('discord.js')
 const axios = require('axios')
+const { checkUserExistence } = require('./graphql')
+const { checkIfAlreadyClaimed } = require('./utils')
 dotenv.config()
 
 const endpoint = 'https://decent-vervet-12.hasura.app/v1/graphql'
@@ -40,7 +42,11 @@ const client = new Client({
   ],
 })
 
-client.login(process.env.DISCORD_TOKEN)
+if (NODE_ENV === 'production') {
+  client.login(process.env.DISCORD_TOKEN_PROD)
+} else {
+  client.login(process.env.DISCORD_TOKEN_DEV)
+}
 
 // Initialize the ethers provider and signer
 // Set up the Alchemy provider
@@ -76,77 +82,14 @@ client.on('messageCreate', async (message) => {
       // pull the discord id from the message
       const discord_name = message.author.username
       if (discord_name === 'gm-bot') return
-      console.log('🚀 ~ client.on ~ discord_name:', discord_name)
-      // query the database to get their streak
 
-      const variables = {
-        discordName: discord_name,
-      }
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-hasura-admin-secret': ADMIN_SECRET,
-      }
-      const checkUserExistenceQuery = `
-        query checkUserExistence($discordName: String!) {
-          users(where: { discord_name: { _eq: $discordName } }) {
-            streak
-            address
-            updated_at
-          }
-        }
-      `
-      const response = await axios.post(
-        endpoint,
-        { query: checkUserExistenceQuery, variables },
-        { headers },
+      const { streak, address, updated_at } = await checkUserExistence(
+        discord_name,
       )
-      console.log('🚀 ~ client.on ~ response.data:', response.data)
-      const { streak, address, updated_at } = response.data.data.users[0]
-      const date = new Date()
-      const todaysDayOfMonth = date.getDate()
-      const lastGm = new Date(updated_at)
-      const lastGmDayOfMonth = lastGm.getDate()
-      console.log('🚀 ~ client.on ~ lastGmDayOfMonth:', lastGmDayOfMonth)
+      console.log('🚀 ~ client.on ~ updated_at:', updated_at)
+      const alreadyClaimed = checkIfAlreadyClaimed(streak, updated_at, message)
+      if (alreadyClaimed) return
 
-      if (todaysDayOfMonth === lastGmDayOfMonth && streak !== 0) {
-        const date = new Date()
-        const options = {
-          timeZone: 'GMT',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-        }
-        const dateString = date.toLocaleString('en-US', options)
-        console.log(dateString) // Output: 'March 1, 2023, 4:34:56 PM GMT'
-        const now = Date.now()
-        const nextDayUtc = new Date(now)
-        nextDayUtc.setUTCHours(24, 0, 0, 0) // set to midnight UTC
-        const durationUntilNextDay = nextDayUtc.getTime() - now
-        const hoursUntilNextDay = Math.floor(
-          durationUntilNextDay / (1000 * 60 * 60),
-        )
-        const minutesUntilNextDay = Math.ceil(
-          (durationUntilNextDay / (1000 * 60)) % 60,
-        )
-        const comeBackMessage = `Come back in ${
-          hoursUntilNextDay > 0
-            ? `${hoursUntilNextDay} ${
-                hoursUntilNextDay === 1 ? 'hour' : 'hours'
-              } and `
-            : ''
-        }${minutesUntilNextDay} ${
-          minutesUntilNextDay === 1 ? 'minute' : 'minutes'
-        } to continue your streak and claim your next badge.`
-
-        message.reply(`You already got your badge for today!
-The current time is ${dateString} GMT (GMT is our favorite timezone).
-${comeBackMessage}
-`)
-
-        return
-      }
       const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
       // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
       message.reply(`Your current streak is ${streak}, I'm airdropping you a badge to celebrate!
@@ -221,7 +164,6 @@ I'll send you another message in about 15 seconds with a link!
               { query: insertUserMutation, variables: data },
               { headers },
             )
-            console.log(response.data)
             message.reply(
               'You are now registered! Now go to the gm channel and type "gm" to get your first badge!',
             )

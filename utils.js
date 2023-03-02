@@ -1,4 +1,4 @@
-const sendMessageIfAlreadyClaimed = (message, updated_at) => {
+const checkIfAlreadyClaimed = (streak, updated_at, message) => {
   const date = new Date()
   const todaysDayOfMonth = date.getDate()
   const lastGm = new Date(updated_at)
@@ -19,6 +19,7 @@ const sendMessageIfAlreadyClaimed = (message, updated_at) => {
     const nextDayUtc = new Date(now)
     nextDayUtc.setUTCHours(24, 0, 0, 0) // set to midnight UTC
     const durationUntilNextDay = nextDayUtc.getTime() - now
+
     const hoursUntilNextDay = Math.floor(
       durationUntilNextDay / (1000 * 60 * 60),
     )
@@ -36,12 +37,15 @@ const sendMessageIfAlreadyClaimed = (message, updated_at) => {
     } to continue your streak and claim your next badge.`
 
     message.reply(`You already got your badge for today!
-        The current time is ${dateString} GMT (GMT is our favorite timezone).
-        ${comeBackMessage}
+The current time is ${dateString} GMT (GMT is our favorite timezone).
+${comeBackMessage}
     `)
 
-    return
+    return true
   }
+  return false
 }
 
-export { sendMessageIfAlreadyClaimed }
+module.exports = {
+  checkIfAlreadyClaimed,
+}
