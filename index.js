@@ -208,10 +208,12 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
     // Call the "airdrop" function on the badges contract
     const gasLimit = 1000000 // Specify the gas limit you want to use
     const tx = await badgesContract.airdrop(recipients, specUri, { gasLimit })
+    console.log('🚀 ~ mintGm ~ tx:', tx)
 
     console.log('🚀 ~ tx submited, waiting...')
     // Wait for the transaction to be mined
-    await tx.wait()
+    const txRes = await tx.wait()
+    console.log('🚀 ~ mintGm ~ txRes:', txRes)
     console.log('tx done, time to update the streak')
     const updateStreakMutation = `
       mutation updateUserStreak($address: String!, $newStreak: Int!) {
