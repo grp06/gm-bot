@@ -28,7 +28,7 @@ const {
   ADMIN_SECRET,
   ALCHEMY_API_KEY,
   BADGES_GOERLI,
-  BADGE_OPTIMISM,
+  BADGES_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
   DISCORD_TOKEN_PROD,
   DISCORD_TOKEN_DEV,
@@ -63,7 +63,7 @@ const signer = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider)
 
 // Initialize the badges contract interface
 const badgesContract = new ethers.Contract(
-  NODE_ENV === 'production' ? BADGE_OPTIMISM : BADGES_GOERLI,
+  NODE_ENV === 'production' ? BADGES_OPTIMISM : BADGES_GOERLI,
   ['function airdrop(address[] recipients, string specUri) public'],
   signer,
 )
