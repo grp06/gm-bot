@@ -14,7 +14,11 @@ const badgeUris = [
 ]
 
 const getProfileUrl = (address) => {
-  return `https://staging.otterspace.xyz/${address}`
+  const base_url =
+    process.env.NODE_ENV === 'production'
+      ? 'https://otterspace.xyz'
+      : 'https://staging.otterspace.xyz'
+  return `${base_url}/${address}`
 }
 
 // Replace these contract addresses with your own
