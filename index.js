@@ -25,11 +25,13 @@ const getProfileUrl = (address) => {
 
 // Replace these contract addresses with your own
 const {
+  ADMIN_SECRET,
+  ALCHEMY_API_KEY,
   BADGES_GOERLI,
   BADGE_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
-  ALCHEMY_API_KEY,
-  ADMIN_SECRET,
+  DISCORD_TOKEN_PROD,
+  DISCORD_TOKEN_DEV,
   NODE_ENV,
 } = process.env
 console.log('🚀 ~ NODE_ENV:', NODE_ENV)
@@ -43,9 +45,9 @@ const client = new Client({
 })
 
 if (NODE_ENV === 'production') {
-  client.login(process.env.DISCORD_TOKEN_PROD)
+  client.login(DISCORD_TOKEN_PROD)
 } else {
-  client.login(process.env.DISCORD_TOKEN_DEV)
+  client.login(DISCORD_TOKEN_DEV)
 }
 
 // Initialize the ethers provider and signer
