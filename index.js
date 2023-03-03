@@ -8,7 +8,7 @@ const { checkUserExistence } = require('./graphql')
 const { checkIfAlreadyClaimed } = require('./utils')
 dotenv.config()
 
-const endpoint = 'https://decent-vervet-12.hasura.app/v1/graphql'
+const endpoint = ''
 
 const badgeUris = [
   'bafyreide5pvibjovhoqbdx6trb2f7nqljsszdsnz2yltkl7fdphskhuxse',
@@ -30,11 +30,14 @@ const {
   BADGES_GOERLI,
   BADGES_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
-  DISCORD_TOKEN_PROD,
-  DISCORD_TOKEN_DEV,
+  PROD_DISCORD_TOKEN,
+  STAGING_DISCORD_TOKEN,
   NODE_ENV,
+  PROD_HASURA_URL,
+  PROD_ADMIN_SECRET,
+  STAGING_HASURA_URL,
+  STAGING_ADMIN_SECRET,
 } = process.env
-console.log('🚀 ~ NODE_ENV:', NODE_ENV)
 
 const client = new Client({
   intents: [
@@ -45,9 +48,9 @@ const client = new Client({
 })
 
 if (NODE_ENV === 'production') {
-  client.login(DISCORD_TOKEN_PROD)
+  client.login(PROD_DISCORD_TOKEN)
 } else {
-  client.login(DISCORD_TOKEN_DEV)
+  client.login(STAGING_DISCORD_TOKEN)
 }
 
 // Initialize the ethers provider and signer
@@ -148,12 +151,13 @@ I'll send you another message in about 6 seconds with a link!
       }
       const headers = {
         'Content-Type': 'application/json',
-        'x-hasura-admin-secret': ADMIN_SECRET,
+        'x-hasura-admin-secret':
+          NODE_ENV === 'production' ? PROD_ADMIN_SECRET : STAGING_ADMIN_SECRET,
       }
 
       try {
         const response = await axios.post(
-          endpoint,
+          NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
           { query: checkUserExistenceQuery, variables },
           { headers },
         )
@@ -247,11 +251,12 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
     }
     const headers = {
       'Content-Type': 'application/json',
-      'x-hasura-admin-secret': ADMIN_SECRET,
+      'x-hasura-admin-secret':
+        NODE_ENV === 'production' ? PROD_ADMIN_SECRET : STAGING_ADMIN_SECRET,
     }
 
     const response = await axios.post(
-      endpoint,
+      NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query: updateStreakMutation, variables },
       { headers },
     )
