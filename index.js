@@ -213,6 +213,11 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
 
 app.post('/mint', async (req, res) => {
   const { address } = req.body
+  res.header(
+    'Access-Control-Allow-Origin',
+    'https://gm-bot-frontend.vercel.app'
+  )
+
   console.log('🚀 ~ app.post ~ address:', address)
   try {
     const hasUser = await checkUserExistence(address)
