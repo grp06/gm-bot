@@ -13,10 +13,10 @@ const {
 const endpoint =
   NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL
 
-const checkUserExistence = async (discordName) => {
+const checkUserExistence = async address => {
   const query = `
-    query checkUserExistence($discordName: String!) {
-        users(where: { discord_name: { _eq: $discordName } }) {
+    query checkUserExistence($address: String!) {
+        users(where: { address: { _eq: $address } }) {
           streak
           address
           updated_at
@@ -24,7 +24,7 @@ const checkUserExistence = async (discordName) => {
     }
   `
   const variables = {
-    discordName,
+    address,
   }
   const headers = {
     'Content-Type': 'application/json',
@@ -36,13 +36,19 @@ const checkUserExistence = async (discordName) => {
     const response = await axios.post(
       NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query, variables },
-      { headers },
+      { headers }
     )
-    const { streak, address, updated_at } = response.data.data.users[0]
-    console.log('🚀 ~ checkUserExistence ~ streak:', streak)
-    console.log('🚀 ~ checkUserExistence ~ address:', address)
-    console.log('🚀 ~ checkUserExistence ~ updated_at:', updated_at)
-    return { streak, address, updated_at }
+    console.log('🚀 ~ checkUserExistence ~ response.data:', response.data)
+    const users = response.data.data.users
+    if (users.length) {
+      console.log('🚀 ~ checkUserExistence ~ users:', users)
+      const { streak, address, updated_at } = users[0]
+      console.log('🚀 ~ checkUserExistence ~ streak:', streak)
+      console.log('🚀 ~ checkUserExistence ~ address:', address)
+      console.log('🚀 ~ checkUserExistence ~ updated_at:', updated_at)
+      return { streak, address, updated_at }
+    }
+    return null
   } catch (error) {
     console.error(error)
     return []
@@ -77,7 +83,7 @@ const insertUser = async (discordName, ethereumAddress) => {
     const response = await axios.post(
       NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query, variables },
-      { headers },
+      { headers }
     )
     console.log(response.data)
     return true

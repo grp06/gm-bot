@@ -1,4 +1,4 @@
-const checkIfAlreadyClaimed = (streak, updated_at, message) => {
+const checkIfAlreadyClaimed = (streak, updated_at, sentFromWebApp) => {
   const date = new Date()
   const todaysDayOfMonth = date.getDate()
   const lastGm = new Date(updated_at)
@@ -21,10 +21,10 @@ const checkIfAlreadyClaimed = (streak, updated_at, message) => {
     const durationUntilNextDay = nextDayUtc.getTime() - now
 
     const hoursUntilNextDay = Math.floor(
-      durationUntilNextDay / (1000 * 60 * 60),
+      durationUntilNextDay / (1000 * 60 * 60)
     )
     const minutesUntilNextDay = Math.ceil(
-      (durationUntilNextDay / (1000 * 60)) % 60,
+      (durationUntilNextDay / (1000 * 60)) % 60
     )
     const comeBackMessage = `Come back in ${
       hoursUntilNextDay > 0
@@ -36,12 +36,12 @@ const checkIfAlreadyClaimed = (streak, updated_at, message) => {
       minutesUntilNextDay === 1 ? 'minute' : 'minutes'
     } to continue your streak and claim your next badge.`
 
-    message.reply(`You already got your badge for today!
+    const replyMessage = `You already got your badge for today!
 The current time is ${dateString} GMt.
 ${comeBackMessage}
-    `)
+    `
 
-    return true
+    return { replyMessage, sentFromWebApp }
   }
   return false
 }

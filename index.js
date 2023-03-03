@@ -6,6 +6,10 @@ const { Client, GatewayIntentBits } = require('discord.js')
 const axios = require('axios')
 const { checkUserExistence } = require('./graphql')
 const { checkIfAlreadyClaimed } = require('./utils')
+
+const cors = require('cors')
+const registerUser = require('./registerUser')
+
 dotenv.config()
 
 const endpoint = ''
@@ -14,7 +18,7 @@ const badgeUris = [
   'bafyreide5pvibjovhoqbdx6trb2f7nqljsszdsnz2yltkl7fdphskhuxse',
 ]
 
-const getProfileUrl = (address) => {
+const getProfileUrl = address => {
   const base_url =
     process.env.NODE_ENV === 'production'
       ? 'https://beta.otterspace.xyz'
@@ -55,7 +59,7 @@ if (NODE_ENV === 'production') {
 // Initialize the ethers provider and signer
 // Set up the Alchemy provider
 const provider = ethers.getDefaultProvider(
-  NODE_ENV === 'production' ? ALCHEMY_OPTIMISM : ALCHEMY_GOERLI,
+  NODE_ENV === 'production' ? ALCHEMY_OPTIMISM : ALCHEMY_GOERLI
 )
 
 const signer = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider)
@@ -64,12 +68,13 @@ const signer = new ethers.Wallet(DEPLOYER_PRIVATE_KEY, provider)
 const badgesContract = new ethers.Contract(
   NODE_ENV === 'production' ? BADGES_OPTIMISM : BADGES_GOERLI,
   ['function airdrop(address[] recipients, string specUri) public'],
-  signer,
+  signer
 )
 console.log("🚀 ~ NODE_ENV === 'production':", NODE_ENV === 'production')
 
 // Initialize the express app
 const app = express()
+app.use(cors())
 
 app.use(bodyParser.json()) // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -78,10 +83,8 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`)
 })
 
-client.on('guildMemberAdd', (member) => {
-  const channel = member.guild.channels.cache.find(
-    (ch) => ch.name === 'register',
-  ) // Replace 'welcome' with the name of your channel
+client.on('guildMemberAdd', member => {
+  const channel = member.guild.channels.cache.find(ch => ch.name === 'register') // Replace 'welcome' with the name of your channel
   if (!channel) return
   channel.send(`Welcome to the server, ${member}!
 
@@ -94,20 +97,33 @@ Step 4: come back tomorrow and repeat
 `)
 })
 
-client.on('messageCreate', async (message) => {
-  if (message.content.includes('gm')) {
+client.on('messageCreate', async message => {
+  if (
+    message.content.includes('gm') ||
+    message.content.includes('GM') ||
+    message.content.includes('Gm')
+  ) {
     try {
       // pull the discord id from the message
       const discord_name = message.author.username
       if (discord_name === 'gm-bot' || discord_name === 'gm') return
 
       const { streak, address, updated_at } = await checkUserExistence(
-        discord_name,
+        discord_name
       )
       console.log('🚀 ~ client.on ~ updated_at:', updated_at)
-      const alreadyClaimed = checkIfAlreadyClaimed(streak, updated_at, message)
+      const alreadyClaimed = checkIfAlreadyClaimed(streak, updated_at)
       console.log('🚀 ~ client.on ~ alreadyClaimed:', alreadyClaimed)
-      if (alreadyClaimed) return
+
+      if (alreadyClaimed) {
+        console.log(
+          '🚀 ~ alreadyClaimed.replyMessage:',
+          alreadyClaimed.replyMessage
+        )
+        message.reply(alreadyClaimed.replyMessage)
+
+        return
+      }
 
       // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
       // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
@@ -115,7 +131,7 @@ client.on('messageCreate', async (message) => {
 
 I'll send you another message in about 6 seconds with a link!
             `)
-      const specUri = `ipfs://${badgeUris[streak]}/metadata.json`
+      const specUri = `ipfs://bafyreidm7u5i6hjz4qvbrocphapjuzajtqmdtvu6e4s42m7mypg36uw2x4/metadata.json`
 
       await mintGm({
         recipients: [address],
@@ -129,104 +145,23 @@ I'll send you another message in about 6 seconds with a link!
   }
 
   if (message.content.startsWith('/register')) {
-    const { username } = message.author
+    const username = message.author.username || ''
+
     const addressPattern = /0x[0-9a-fA-F]{40}/
     const match = message.content.match(addressPattern)
+    const address = match[0]
 
-    if (match) {
-      const ethereumAddress = match[0]
-
-      const checkUserExistenceQuery = `
-        query checkUserExistence($discordName: String!, $address: String!) {
-          users(where: { _or: [{ discord_name: { _eq: $discordName } }, { address: { _eq: $address } }] }) {
-            id
-            streak
-          }
-        }
-      `
-      const variables = {
-        discordName: username,
-        address: ethereumAddress,
-      }
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-hasura-admin-secret':
-          NODE_ENV === 'production' ? PROD_ADMIN_SECRET : STAGING_ADMIN_SECRET,
-      }
-
-      try {
-        const response = await axios.post(
-          NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
-          { query: checkUserExistenceQuery, variables },
-          { headers },
-        )
-
-        if (response.data.data.users.length === 0) {
-          const data = {
-            objects: [
-              {
-                discord_name: username,
-                address: ethereumAddress,
-              },
-            ],
-          }
-          const table = 'users'
-          const insertUserMutation = `
-            mutation insert_${table}($objects: [${table}_insert_input!]!) {
-              insert_${table}(objects: $objects) {
-                affected_rows
-              }
-            }
-          `
-
-          try {
-            const response = await axios.post(
-              NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
-              { query: insertUserMutation, variables: data },
-              { headers },
-            )
-            message.reply(
-              'You are now registered! Now go to the gm channel and type "gm" to get your first badge!',
-            )
-            const addRole = async () => {
-              const member = await message.guild.members.fetch(message.author)
-              const role = member.guild.roles.cache.find(
-                (r) => r.name === 'Member',
-              )
-              if (role) {
-                await member.roles.add(role)
-                console.log(`Added the Registered role to user ${username}`)
-              } else {
-                console.error('Could not find the Registered role')
-              }
-            }
-            setTimeout(() => {
-              addRole()
-            }, 2000)
-          } catch (error) {
-            console.error(error)
-          }
-        } else {
-          message.reply('You are already registered! Get outta here!')
-          console.log('User already exists, skipping insert')
-        }
-      } catch (error) {
-        console.error(error)
-      }
-    } else {
-      console.log('No Ethereum address found in message')
+    if (address) {
+      registerUser(address, message, username)
     }
   }
 })
 
 const mintGm = async ({ recipients, specUri, newStreak, message }) => {
-  console.log('🚀 ~ mintGm ~ specUri:', specUri)
-  console.log('🚀 ~ mintGm ~ recipients:', recipients)
   try {
     // Call the "airdrop" function on the badges contract
     const gasLimit = 1000000 // Specify the gas limit you want to use
     const tx = await badgesContract.airdrop(recipients, specUri, { gasLimit })
-    console.log('🚀 ~ mintGm ~ tx:', tx)
 
     console.log('🚀 ~ tx submited, waiting...')
     // Wait for the transaction to be mined
@@ -257,28 +192,76 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
     const response = await axios.post(
       NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query: updateStreakMutation, variables },
-      { headers },
+      { headers }
     )
     console.log('🚀 ~ mintGm ~ response.data:', response.data)
-    message.reply(
-      `Airdrop successful! You can see your badge here: ${getProfileUrl(
-        recipients[0],
-      )}`,
-    )
-    // Respond with a success message
-    return true
+    // if message is null it means the function was called from the web app
+    if (!message) {
+      return getProfileUrl(recipients[0])
+    }
+    const discordSuccessMessage = `Airdrop successful! You can see your badge here: ${getProfileUrl(
+      recipients[0]
+    )}`
+    return message.reply(discordSuccessMessage)
   } catch (error) {
     console.error(error)
+    console.log('🚀 ~ mintGm ~ error:', error)
     // Respond with an error message
-    message.reply(
-      'Airdrop failed! You better go complain about it in the #support channel',
-    )
-    return false
+    return error
   }
 }
+
+app.post('/mint', async (req, res) => {
+  const { address } = req.body
+  console.log('🚀 ~ app.post ~ address:', address)
+  try {
+    const hasUser = await checkUserExistence(address)
+
+    let streak = 0
+    if (hasUser) {
+      console.log('🚀 ~ we already have a user:', hasUser)
+      streak = hasUser.streak
+      const alreadyClaimed = checkIfAlreadyClaimed(
+        streak,
+        hasUser.updated_at,
+        true
+      )
+      console.log('🚀 ~ client.on ~ alreadyClaimed:', alreadyClaimed)
+      if (alreadyClaimed) {
+        return res.json({
+          error: alreadyClaimed.replyMessage,
+        })
+      }
+    } else {
+      console.log('registering user for the first time')
+      await registerUser(address)
+    }
+
+    // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
+    // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
+
+    const specUri = `ipfs://bafyreiavdoof6cbshxsjg4l3dwgfix4l77s3jyzrkwynhel5tuqhfu4bum/metadata.json`
+
+    const badgeLink = await mintGm({
+      recipients: [address],
+      specUri,
+      newStreak: streak + 1,
+      message: null,
+    })
+    return res.json({
+      successMessage: badgeLink,
+    })
+  } catch (error) {
+    console.log('🚀 ~ app.post ~ error:', error)
+    return res.json({
+      error: error.message,
+    })
+  }
+})
+
 const port = process.env.PORT || 3000
 
 // Start the server
 app.listen(port, () => {
-  console.log('Server listening on port 3000')
+  console.log(`Server listening on ${port}`)
 })
