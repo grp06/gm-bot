@@ -24,7 +24,6 @@ const getProfileUrl = (address) => {
 
 // Replace these contract addresses with your own
 const {
-  ADMIN_SECRET,
   ALCHEMY_GOERLI,
   ALCHEMY_OPTIMISM,
   BADGES_GOERLI,

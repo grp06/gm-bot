@@ -2,8 +2,16 @@ const axios = require('axios')
 const dotenv = require('dotenv')
 dotenv.config()
 
-const endpoint = 'https://decent-vervet-12.hasura.app/v1/graphql'
-const { ADMIN_SECRET } = process.env
+const {
+  PROD_ADMIN_SECRET,
+  STAGING_ADMIN_SECRET,
+  NODE_ENV,
+  PROD_HASURA_URL,
+  STAGING_HASURA_URL,
+} = process.env
+
+const endpoint =
+  NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL
 
 const checkUserExistence = async (discordName) => {
   const query = `
@@ -20,12 +28,13 @@ const checkUserExistence = async (discordName) => {
   }
   const headers = {
     'Content-Type': 'application/json',
-    'x-hasura-admin-secret': ADMIN_SECRET,
+    'x-hasura-admin-secret':
+      NODE_ENV === 'production' ? PROD_ADMIN_SECRET : STAGING_ADMIN_SECRET,
   }
 
   try {
     const response = await axios.post(
-      endpoint,
+      NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query, variables },
       { headers },
     )
@@ -60,7 +69,8 @@ const insertUser = async (discordName, ethereumAddress) => {
   const variables = { objects: data }
   const headers = {
     'Content-Type': 'application/json',
-    'x-hasura-admin-secret': ADMIN_SECRET,
+    'x-hasura-admin-secret':
+      NODE_ENV === 'production' ? PROD_ADMIN_SECRET : STAGING_ADMIN_SECRET,
   }
 
   try {
