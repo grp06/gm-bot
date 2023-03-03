@@ -75,7 +75,7 @@ const insertUser = async (discordName, ethereumAddress) => {
 
   try {
     const response = await axios.post(
-      endpoint,
+      NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
       { query, variables },
       { headers },
     )

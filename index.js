@@ -181,7 +181,7 @@ I'll send you another message in about 6 seconds with a link!
 
           try {
             const response = await axios.post(
-              endpoint,
+              NODE_ENV === 'production' ? PROD_HASURA_URL : STAGING_HASURA_URL,
               { query: insertUserMutation, variables: data },
               { headers },
             )
