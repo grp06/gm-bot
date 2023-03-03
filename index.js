@@ -245,7 +245,7 @@ app.post('/mint', async (req, res) => {
     // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
     // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
 
-    const specUri = `ipfs://bafyreiavdoof6cbshxsjg4l3dwgfix4l77s3jyzrkwynhel5tuqhfu4bum/metadata.json`
+    const specUri = `ipfs://bafyreidm7u5i6hjz4qvbrocphapjuzajtqmdtvu6e4s42m7mypg36uw2x4/metadata.json`
 
     const badgeLink = await mintGm({
       recipients: [address],
