@@ -131,7 +131,7 @@ client.on('messageCreate', async message => {
 
 I'll send you another message in about 6 seconds with a link!
             `)
-      const specUri = `ipfs://bafyreidm7u5i6hjz4qvbrocphapjuzajtqmdtvu6e4s42m7mypg36uw2x4/metadata.json`
+      const specUri = `ipfs://bafyreibhmarzapjmtfw5fgt33go6d3kuxittigvqrbswqjxpgdqmv2rq54/metadata.json`
 
       await mintGm({
         recipients: [address],
