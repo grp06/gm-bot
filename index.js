@@ -218,7 +218,7 @@ app.post('/mint', async (req, res) => {
   const input = req.body.address
   console.log(input.indexOf('0x'))
   let address
-  if (address.indexOf('0x') !== 0) {
+  if (input.indexOf('0x') !== 0) {
     address = await provider.resolveName(address)
   } else {
     address = input
