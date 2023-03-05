@@ -30,6 +30,7 @@ const getProfileUrl = address => {
 const {
   ALCHEMY_GOERLI,
   ALCHEMY_OPTIMISM,
+  ALCHEMY_API_KEY,
   BADGES_GOERLI,
   BADGES_OPTIMISM,
   DEPLOYER_PRIVATE_KEY,
@@ -219,7 +220,12 @@ app.post('/mint', async (req, res) => {
   console.log(input.indexOf('0x'))
   let address
   if (input.indexOf('0x') !== 0) {
-    address = await provider.resolveName(input)
+    const mainnetProvider = new ethers.providers.AlchemyProvider(
+      'mainnet',
+      ALCHEMY_API_KEY
+    )
+    address = await mainnetProvider.resolveName(input)
+    console.log('🚀 ~ app.post ~ address:', address)
   } else {
     address = input
   }
