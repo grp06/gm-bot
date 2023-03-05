@@ -70,8 +70,11 @@ const badgesContract = new ethers.Contract(
   ['function airdrop(address[] recipients, string specUri) public'],
   signer
 )
-console.log("🚀 ~ NODE_ENV === 'production':", NODE_ENV === 'production')
 
+console.log("🚀 ~ NODE_ENV === 'production':", NODE_ENV === 'production')
+const registryAddress = '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e'
+const resolverAbi = ['function addr(bytes32 node) view returns (address)']
+const registry = new ethers.Contract(registryAddress, resolverAbi, provider)
 // Initialize the express app
 const app = express()
 app.use(cors())
@@ -131,7 +134,7 @@ client.on('messageCreate', async message => {
 
 I'll send you another message in about 6 seconds with a link!
             `)
-      const specUri = `ipfs://bafyreibhmarzapjmtfw5fgt33go6d3kuxittigvqrbswqjxpgdqmv2rq54/metadata.json`
+      const specUri = `ipfs://bafyreicz7qudm35plpw6r6zfh7czxim6y37ey7dsbgv7d7rztp5rnujcdi/metadata.json`
 
       await mintGm({
         recipients: [address],
@@ -212,13 +215,21 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
 }
 
 app.post('/mint', async (req, res) => {
-  const { address } = req.body
+  const input = req.body.address
+  console.log(input.indexOf('0x'))
+  let address
+  if (address.indexOf('0x') !== 0) {
+    address = await provider.resolveName(address)
+  } else {
+    address = input
+  }
   res.header(
     'Access-Control-Allow-Origin',
-    'https://gm-bot-frontend.vercel.app'
+    NODE_ENV === 'production'
+      ? 'https://gm-bot-frontend.vercel.app'
+      : 'http://localhost:5173'
   )
 
-  console.log('🚀 ~ app.post ~ address:', address)
   try {
     const hasUser = await checkUserExistence(address)
 
@@ -242,10 +253,7 @@ app.post('/mint', async (req, res) => {
       await registerUser(address)
     }
 
-    // const hardCodedStreak = `ipfs://bafyreib7fdsb2ypwyn3spxspodjubiuj5ldigfmfimqtb23a6gtzbqpeve/metadata.json`
-    // specUri: `ipfs://${badgeUris[streak]}/metadata.json`,
-
-    const specUri = `ipfs://bafyreibhmarzapjmtfw5fgt33go6d3kuxittigvqrbswqjxpgdqmv2rq54/metadata.json`
+    const specUri = `ipfs://bafyreicz7qudm35plpw6r6zfh7czxim6y37ey7dsbgv7d7rztp5rnujcdi/metadata.json`
 
     const badgeLink = await mintGm({
       recipients: [address],
