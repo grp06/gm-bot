@@ -135,7 +135,7 @@ client.on('messageCreate', async message => {
 
 I'll send you another message in about 6 seconds with a link!
             `)
-      const specUri = `ipfs://bafyreicz7qudm35plpw6r6zfh7czxim6y37ey7dsbgv7d7rztp5rnujcdi/metadata.json`
+      const specUri = `ipfs://bafyreidymikzqdluaic62jyfgyr5twxjwkuhvmfuolojvyq3v7dcrmqmai/metadata.json`
 
       await mintGm({
         recipients: [address],
@@ -216,18 +216,18 @@ const mintGm = async ({ recipients, specUri, newStreak, message }) => {
 }
 
 app.post('/mint', async (req, res) => {
-  const input = req.body.address
-  console.log(input.indexOf('0x'))
+  const addressOrEns = req.body.address
+  console.log(addressOrEns.indexOf('0x'))
   let address
-  if (input.indexOf('0x') !== 0) {
+  if (addressOrEns.indexOf('0x') !== 0) {
     const mainnetProvider = new ethers.providers.AlchemyProvider(
       'mainnet',
       ALCHEMY_API_KEY
     )
-    address = await mainnetProvider.resolveName(input)
+    address = await mainnetProvider.resolveName(addressOrEns)
     console.log('🚀 ~ app.post ~ address:', address)
   } else {
-    address = input
+    address = addressOrEns
   }
   res.header(
     'Access-Control-Allow-Origin',
@@ -259,7 +259,7 @@ app.post('/mint', async (req, res) => {
       await registerUser(address)
     }
 
-    const specUri = `ipfs://bafyreicz7qudm35plpw6r6zfh7czxim6y37ey7dsbgv7d7rztp5rnujcdi/metadata.json`
+    const specUri = `ipfs://bafyreidymikzqdluaic62jyfgyr5twxjwkuhvmfuolojvyq3v7dcrmqmai/metadata.json`
 
     const badgeLink = await mintGm({
       recipients: [address],
